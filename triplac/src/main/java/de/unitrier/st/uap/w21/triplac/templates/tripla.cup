@@ -1,0 +1,161 @@
+import de.unitrier.st.uap.w21.triplac.nodes.*;
+import de.unitrier.st.uap.w21.triplac.lex.Lexer;
+
+/* Parser code to change the way the parser reports errors (include
+   line and column number of the error). */
+parser code {:
+    public Parser(Lexer s){ super(s,s.sf);}
+:};
+
+// Declaration of Terminals and Non Terminals =================================
+
+terminal Symbol LET, IN, IF, THEN, ELSE, DO, WHILE;
+terminal Symbol LPAR, RPAR, LBRA, RBRA;
+terminal Symbol ASSIGN;
+terminal Symbol ADD, SUB, MUL, DIV, EQ, NEQ, GT, LT, GTE, LTE;
+terminal Symbol AND, OR;
+terminal Symbol SEMI, COMMA;
+terminal Symbol TRUE, FALSE;
+terminal String ID;
+terminal Integer CONST;
+
+non terminal Node E, A, D, V, C, DPart;
+
+precedence nonassoc RPAR;
+precedence left COMMA, SEMI, ID;
+precedence nonassoc ASSIGN, ELSE;
+precedence nonassoc LT, GT, EQ, NEQ, LTE, GTE;
+precedence left ADD, SUB, OR;
+precedence left MUL, DIV, AND;
+
+// Grammar Section ===========================================================
+
+/*
+E ::= LET D IN E
+    | ID
+    | ID LPAR A RPAR
+    | E AOP E
+    | LPAR E RPAR
+    | CONST
+    | ID ASSIGN E
+    | E SEMI E
+    | IF C THEN E ELSE E
+    | DO E WHILE C
+    ;
+
+A ::= E
+    | A COMMA E
+    ;
+
+D ::= ID LPAR V RPAR LBRA E RBRA
+    | D D
+    ;
+
+V ::= ID
+    | V COMMA V
+    ;
+
+C ::= LPAR C RPAR
+    | C LOP C
+    | E RELOP E
+    | TRUE
+	| FALSE
+    ;
+
+AOP ::= ADD
+    | SUB
+    | MUL
+    | DIV
+    ;
+
+LOP ::= AND
+    | OR
+    ;
+
+COP ::= EQ
+    | NEQ
+    | LT
+    | GT
+    ;
+*/
+
+start with E;
+
+
+E ::= E:e1 SEMI E:e2
+    {:RESULT = new SemiNode(e1,e2);:}
+    | LET D:d IN E:e
+    {:RESULT = new LetNode(new DefNode(d), new BodyNode(e));:}
+    | ID:id
+    {:RESULT = new ReadNode(new IDNode(id));:}
+    | ID:id LPAR A:a RPAR
+    {:RESULT = new CallNode(new IDNode(id), a);:}
+    | E:e1 ADD E:e2
+    {:RESULT = new OpNode(e1,e2,sym.ADD);:}
+    | E:e1 SUB E:e2
+    {:RESULT = new OpNode(e1,e2,sym.SUB);:}
+    | E:e1 MUL E:e2
+    {:RESULT = new OpNode(e1,e2,sym.MUL);:}
+    | E:e1 DIV E:e2
+    {:RESULT = new OpNode(e1,e2,sym.DIV);:}
+    | LPAR E:e RPAR
+    {:RESULT = new ParNode(e);:}
+    | CONST:c
+    {:RESULT = new ConstNode(c);:}
+    | ID:id ASSIGN E:e
+    {:RESULT = new AssignNode(new IDNode(id), e);:}
+    | IF C:c1 THEN E:e2 ELSE E:e3
+    {:RESULT = new IfNode(new CondNode(c1), new ThenNode(e2), new ElseNode(e3));:}
+    | WHILE C:c1 DO LBRA E:e1 RBRA
+    {:RESULT = new WhileNode(new CondNode(c1), new ExprNode(e1));:}
+    ;
+
+C ::= LPAR C:c1 RPAR
+    {:RESULT = new ParNode(c1);:}
+    | C:c1 AND C:c2
+    {:RESULT = new OpNode(c1,c2,sym.AND);:}
+    | C:c1 OR C:c2
+    {:RESULT = new OpNode(c1,c2,sym.OR);:}
+    | C:c1 NEQ C:c2
+    {:RESULT = new OpNode(c1,c2,sym.NEQ);:}
+    | C:c1 EQ C:c2
+    {:RESULT = new OpNode(c1,c2,sym.EQ);:}
+    | E:e1 LT E:e2
+    {:RESULT = new OpNode(e1,e2,sym.LT);:}
+    | E:e1 LTE E:e2
+    {:RESULT = new OpNode(e1,e2,sym.LTE);:}
+    | E:e1 GTE E:e2
+    {:RESULT = new OpNode(e1,e2,sym.GTE);:}
+    | E:e1 GT E:e2
+    {:RESULT = new OpNode(e1,e2,sym.GT);:}
+    | E:e1 EQ E:e2
+    {:RESULT = new OpNode(e1,e2,sym.EQ);:}
+    | E:e1 NEQ E:e2
+    {:RESULT = new OpNode(e1,e2,sym.NEQ);:}
+    | TRUE
+    {:RESULT = new ConstNode(1);:}
+    | FALSE
+    {:RESULT = new ConstNode(0);:}
+    ;
+
+A ::= E:e
+    {:RESULT = new ArgsNode(e);:}
+    | A:a COMMA E:e
+    {:RESULT = new ArgsNode(a,e);:}
+    ;
+
+D ::= DPart:d
+    {:RESULT = d;:}
+    | D:d1 DPart:d2
+    {:RESULT = new DefNode(d1,d2);:}
+    ;
+
+DPart ::= ID:id LPAR V:v RPAR LBRA E:e RBRA
+    {:RESULT = new FuncNode(new IDNode(id), new ParamsNode(v), new BodyNode(e));:}
+    ;
+
+V ::= ID:id
+    {:RESULT = new IDNode(id);:}
+    | V:v1 COMMA V:v2
+    {:RESULT = new ParamsNode(v1,v2);:}
+    ;

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+      
+  
+  <modelVersion>4.0.0</modelVersion>
+      
+  
+  <groupId>de.unitrier.st.uap.w21</groupId>
+      
+  
+  <artifactId>uap21</artifactId>
+      
+  
+  <version>1.0</version>
+      
+  
+  <name>uap21</name>
+      
+  
+  <packaging>pom</packaging>
+      
+  
+  <modules>
+            
+    
+    <module>tram</module>
+            
+    
+    <module>triplac</module>
+            
+    
+    <module>tripla</module>
+          
+    
+    <module>triplagui</module>
+      
+  </modules>
+      
+  
+  <build>
+            
+    
+    <plugins>
+                  
+      
+      <plugin>
+                        
+        
+        <groupId>org.apache.maven.plugins</groupId>
+                        
+        
+        <artifactId>maven-compiler-plugin</artifactId>
+                        
+        
+        <version>3.2</version>
+                        
+        
+        <configuration>
+                     
+          
+          <!-- Compile java 7 compatible bytecode -->
+                              
+          
+          <source>1.8</source>
+                              
+          
+          <target>1.8</target>
+                            
+        
+        </configuration>
+                      
+      
+      </plugin>
+                
+    
+    </plugins>
+          
+  
+  </build>
+    
+
+</project>
